@@ -59,12 +59,7 @@ class GrocyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Show the configuration form to edit the data."""
         data_schema = OrderedDict()
         data_schema[vol.Required(CONF_URL, default="")] = str
-        data_schema[
-            vol.Required(
-                CONF_API_KEY,
-                default="",
-            )
-        ] = str
+        data_schema[vol.Required(CONF_API_KEY, default="")] = str
         data_schema[vol.Optional(CONF_PORT, default=DEFAULT_PORT)] = int
         data_schema[vol.Optional(CONF_VERIFY_SSL, default=False)] = bool
         _LOGGER.debug("config form")
