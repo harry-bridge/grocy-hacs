@@ -12,7 +12,7 @@
             }
         },
         "error": {
-            "auth": "Something went wrong."
+            "auth": "Something went wrong. See logs for more details."
         },
         "abort": {
             "single_instance_allowed": "Only a single configuration of Grocy is allowed."

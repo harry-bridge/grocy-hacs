@@ -63,6 +63,7 @@ class GrocyDataUpdateCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
                 continue
 
             try:
+                _LOGGER.debug("Updating entity %s", entity.entity_id)
                 data[
                     entity.entity_description.key
                 ] = await self.grocy_data.async_update_data(

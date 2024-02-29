@@ -15,6 +15,8 @@ from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_BATTERIES,
     ATTR_CHORES,
+    ATTR_ALL_LOCATIONS,
+    ATTR_ALL_PRODUCTS,
     ATTR_EXPIRED_PRODUCTS,
     ATTR_EXPIRING_PRODUCTS,
     ATTR_MEAL_PLAN,
@@ -25,6 +27,7 @@ from .const import (
     ATTR_OVERDUE_TASKS,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
+    ATTR_STOCK_BY_LOCATION,
     ATTR_TASKS,
     DOMAIN,
     PLATFORMS,
@@ -73,7 +76,10 @@ async def _async_get_available_entities(grocy_data: GrocyData) -> List[str]:
     grocy_config = await grocy_data.async_get_config()
     if grocy_config:
         if "FEATURE_FLAG_STOCK" in grocy_config.enabled_features:
+            available_entities.append(ATTR_ALL_LOCATIONS)
             available_entities.append(ATTR_STOCK)
+            available_entities.append(ATTR_STOCK_BY_LOCATION)
+            available_entities.append(ATTR_ALL_PRODUCTS)
             available_entities.append(ATTR_MISSING_PRODUCTS)
             available_entities.append(ATTR_EXPIRED_PRODUCTS)
             available_entities.append(ATTR_EXPIRING_PRODUCTS)

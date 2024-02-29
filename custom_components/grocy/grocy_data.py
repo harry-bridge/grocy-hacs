@@ -11,10 +11,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from pygrocy.data_models.battery import Battery
+from pygrocy.data_models.generic import EntityType
 
 from .const import (
     ATTR_BATTERIES,
     ATTR_CHORES,
+    ATTR_ALL_LOCATIONS,
+    ATTR_ALL_PRODUCTS,
     ATTR_EXPIRED_PRODUCTS,
     ATTR_EXPIRING_PRODUCTS,
     ATTR_MEAL_PLAN,
@@ -25,6 +28,7 @@ from .const import (
     ATTR_OVERDUE_TASKS,
     ATTR_SHOPPING_LIST,
     ATTR_STOCK,
+    ATTR_STOCK_BY_LOCATION,
     ATTR_TASKS,
     CONF_API_KEY,
     CONF_PORT,
@@ -43,10 +47,13 @@ class GrocyData:
         self.hass = hass
         self.api = api
         self.entity_update_method = {
+            ATTR_ALL_LOCATIONS: self.async_update_all_locations,
             ATTR_STOCK: self.async_update_stock,
+            ATTR_STOCK_BY_LOCATION: self.async_update_stock_by_location,
             ATTR_CHORES: self.async_update_chores,
             ATTR_TASKS: self.async_update_tasks,
             ATTR_SHOPPING_LIST: self.async_update_shopping_list,
+            ATTR_ALL_PRODUCTS: self.async_update_all_products,
             ATTR_EXPIRING_PRODUCTS: self.async_update_expiring_products,
             ATTR_EXPIRED_PRODUCTS: self.async_update_expired_products,
             ATTR_OVERDUE_PRODUCTS: self.async_update_overdue_products,
@@ -66,6 +73,36 @@ class GrocyData:
     async def async_update_stock(self):
         """Update stock data."""
         return await self.hass.async_add_executor_job(self.api.stock)
+
+    async def async_update_all_locations(self):
+        """Update locations data."""
+
+        def wrapper():
+            return(self.api.get_generic_objects_for_type(EntityType.LOCATIONS))
+
+        return await self.hass.async_add_executor_job(wrapper)
+
+    async def async_update_stock_by_location(self):
+        """Update stock by location data."""
+
+        def wrapper():
+            products = self.api.get_generic_objects_for_type(EntityType.PRODUCTS)
+            locations = self.api.get_generic_objects_for_type(EntityType.LOCATIONS)
+
+            for location in locations:
+                url = f"stock/locations/{location['id']}/entries"
+                stock_entries = self.api._api_client._do_get_request(url)
+
+                for entry in stock_entries:
+                    entry['name'] = list(filter(lambda x: x['id'] == entry['product_id'], products))[0]['name']
+
+                location['products'] = stock_entries
+
+                _LOGGER.debug(stock_entries)
+
+            return(locations)
+
+        return await self.hass.async_add_executor_job(wrapper)
 
     async def async_update_chores(self):
         """Update chores data."""
@@ -117,6 +154,14 @@ class GrocyData:
 
         def wrapper():
             return self.api.shopping_list(True)
+
+        return await self.hass.async_add_executor_job(wrapper)
+
+    async def async_update_all_products(self):
+        """Update all products data."""
+
+        def wrapper():
+            return self.api.get_generic_objects_for_type(EntityType.PRODUCTS)
 
         return await self.hass.async_add_executor_job(wrapper)
 
