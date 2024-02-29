@@ -17,6 +17,7 @@ from .const import (
     ATTR_CHORES,
     ATTR_ALL_LOCATIONS,
     ATTR_ALL_PRODUCTS,
+    ATTR_QUANTITY_UNITS,
     ATTR_EXPIRED_PRODUCTS,
     ATTR_EXPIRING_PRODUCTS,
     ATTR_MEAL_PLAN,
@@ -77,6 +78,7 @@ async def _async_get_available_entities(grocy_data: GrocyData) -> List[str]:
     if grocy_config:
         if "FEATURE_FLAG_STOCK" in grocy_config.enabled_features:
             available_entities.append(ATTR_ALL_LOCATIONS)
+            available_entities.append(ATTR_QUANTITY_UNITS)
             available_entities.append(ATTR_STOCK)
             available_entities.append(ATTR_STOCK_BY_LOCATION)
             available_entities.append(ATTR_ALL_PRODUCTS)

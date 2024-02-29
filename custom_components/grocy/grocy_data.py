@@ -18,6 +18,7 @@ from .const import (
     ATTR_CHORES,
     ATTR_ALL_LOCATIONS,
     ATTR_ALL_PRODUCTS,
+    ATTR_QUANTITY_UNITS,
     ATTR_EXPIRED_PRODUCTS,
     ATTR_EXPIRING_PRODUCTS,
     ATTR_MEAL_PLAN,
@@ -48,6 +49,7 @@ class GrocyData:
         self.api = api
         self.entity_update_method = {
             ATTR_ALL_LOCATIONS: self.async_update_all_locations,
+            ATTR_QUANTITY_UNITS: self.async_update_quantity_units,
             ATTR_STOCK: self.async_update_stock,
             ATTR_STOCK_BY_LOCATION: self.async_update_stock_by_location,
             ATTR_CHORES: self.async_update_chores,
@@ -82,19 +84,34 @@ class GrocyData:
 
         return await self.hass.async_add_executor_job(wrapper)
 
+    async def async_update_quantity_units(self):
+        """Update quantity units data."""
+
+        def wrapper():
+            return(self.api.get_generic_objects_for_type(EntityType.QUANTITY_UNITS))
+
+        return await self.hass.async_add_executor_job(wrapper)
+
     async def async_update_stock_by_location(self):
         """Update stock by location data."""
 
         def wrapper():
             products = self.api.get_generic_objects_for_type(EntityType.PRODUCTS)
             locations = self.api.get_generic_objects_for_type(EntityType.LOCATIONS)
+            quantity_units = self.api.get_generic_objects_for_type(EntityType.QUANTITY_UNITS)
 
             for location in locations:
                 url = f"stock/locations/{location['id']}/entries"
                 stock_entries = self.api._api_client._do_get_request(url)
 
                 for entry in stock_entries:
-                    entry['name'] = list(filter(lambda x: x['id'] == entry['product_id'], products))[0]['name']
+                    product = list(filter(lambda x: x['id'] == entry['product_id'], products))[0]
+                    qu = list(filter(lambda x: x['id'] == product['qu_id_stock'], quantity_units))[0]
+                    entry['name'] = product['name']
+                    if entry['amount'] == 1:
+                        entry['qu_name_stock'] = qu['name']
+                    else:
+                        entry['qu_name_stock'] = qu['name_plural']
 
                 location['products'] = stock_entries
 

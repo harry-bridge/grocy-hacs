@@ -23,6 +23,7 @@ from .const import (
     ATTR_SHOPPING_LIST,
     ATTR_ALL_LOCATIONS,
     ATTR_ALL_PRODUCTS,
+    ATTR_QUANTITY_UNITS,
     ATTR_STOCK,
     ATTR_STOCK_BY_LOCATION,
     ATTR_TASKS,
@@ -32,6 +33,7 @@ from .const import (
     MEAL_PLANS,
     PRODUCTS,
     LOCATIONS,
+    UNITS,
     TASKS,
 )
 from .coordinator import GrocyDataUpdateCoordinator
@@ -151,6 +153,18 @@ SENSORS: tuple[GrocySensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:fridge-outline",
         exists_fn=lambda entities: ATTR_ALL_PRODUCTS in entities,
+        attributes_fn=lambda data: {
+            "products": [x for x in data],
+            "count": len(data),
+        },
+    ),
+    GrocySensorEntityDescription(
+        key=ATTR_QUANTITY_UNITS,
+        name="Grocy quantity units",
+        native_unit_of_measurement=UNITS,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:fridge-outline",
+        exists_fn=lambda entities: ATTR_QUANTITY_UNITS in entities,
         attributes_fn=lambda data: {
             "products": [x for x in data],
             "count": len(data),
